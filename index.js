@@ -192,7 +192,5 @@ const isAnOperator = (operation, index) => {
     if (element == '+' || element == '-' || element == '*' || element == '/') {
         return true
     }
-    else {
-        return false
-    }
+    return false
 }
