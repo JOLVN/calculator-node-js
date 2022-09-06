@@ -2,6 +2,8 @@
  * Run with "node index.js" once you are in this folder
  */
 
+const { openStdin } = require('process');
+
 
 // Requires readline module and creates its interface
 const readline = require('readline').createInterface({
@@ -35,35 +37,129 @@ const question = () => {
 question()
 
 
-const calculOperation = (operation) => {
 
+const reverseString = (str) => {
+    return str.split("").reverse().join("");
+}
+
+const findOperationNumberBefore = (operation, operatorIndex) => {
+    let a = operation[operatorIndex - 1]
+
+    for (let y = operatorIndex - 2; y >= 0; y--) {
+        let element = operation[y];
+        if (Number(element) || element == '0') {
+            a += element
+        }
+        else {
+            return reverseString(a)
+        }
+    }
+    return reverseString(a)
+}
+
+
+const findOperationNumberAfter = (operation, operatorIndex) => {
+    let b = operation[operatorIndex + 1]
+
+    for (let y = operatorIndex + 2; y < operation.length; y++) {
+        const element = operation[y];
+        if (Number(element) || element == '0') {
+            b += element
+        }
+        else {
+            return b
+        }
+    }
+    return b
+}
+
+const calculOperation = (operation) => {
+    
     let result = null
     
-    // Split simple "A [+, -, *, /] B" operation with operator
-    const splitedOperation = operation.split(/([\+\-\*\/])/, 3)
+    // Remove spaces
+    operation = operation.replace(/\s+/g, '')
 
-    // Get splited elements from operation
-    const a = parseInt(splitedOperation[0])
-    const b = parseInt(splitedOperation[2])
-    const operator = splitedOperation[1]
+    let a = 0
+    let b = 0
+    let operator = ''
+    for (let i = 0; i < operation.length; i++) {
+        let element = operation[i]
+        
+        // If element is a number -> change its type to 'number'
+        if (Number(element) || element == 0) {
+            element = Number(element)
+        }
 
-    // Calcul
-    switch (operator) {
-        case '+':
-            result = a + b
-            break;
-        case '-':
-            result = a - b
-            break;
-        case '*':
-            result = a * b
-            break;
-        case '/':
-            result = a / b
-            break;
+        // Operator or parenthese
+        else {
+            a = findOperationNumberBefore(operation, i)
+            b = findOperationNumberAfter(operation, i)
+            operator = element
+
+            // Check if there is a prioritory operator
+            for (let y = 0; y < operation.length; y++) {
+                if (operation[y] == '*' || operation[y] == '/') {
+                    a = findOperationNumberBefore(operation, y)
+                    b = findOperationNumberAfter(operation, y)
+                    operator = operation[y]
+                    result = calculateOperation(a, b, operator)
+                }
+            }
+
+            // Calculate operation if there was no priority operator
+            if (!result) {
+                result = calculateOperation(a, b, operator)
+            }
+
+            // Check if there is more calcul to make
+            if (operation.length > (a.length + b.length + 1)) {
+                const stringToReplace = a + operator + b
+                const newOperation = operation.replace(stringToReplace, result)
+                
+                // Calculate again
+                return calculOperation(newOperation)
+            }
+            // Return the result
+            return result
+        
+            
+
+        }
+
+
+
     }
 
-    // Return the result
-    return result
+ 
 
 }
+
+
+
+/**
+ * FUNCTIONS
+ */
+
+// Calculate to numbers about they operator
+const calculateOperation = (a, b, operator) => {
+    a = Number(a)
+    b = Number(b)
+
+    switch (operator) {
+        case '+':
+            return a + b
+            
+        case '-':
+            return a - b
+            
+        case '*':
+            return a * b
+            
+        case '/':
+            return a / b
+            
+    }
+}
+
+
