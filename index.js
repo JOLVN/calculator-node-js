@@ -50,42 +50,46 @@ const calculOperation = (operation) => {
 
         // Operator or parenthese
         else if (element != '.' && i > 0) {
-            a = findOperationNumberBefore(operation, i)
-            b = findOperationNumberAfter(operation, i)
-            operator = element
             
             // Check if there is a prioritory operator
             for (let y = 0; y < operation.length; y++) {
 
+                let operatorIndex = null
+
+                // For parentheses priority
                 if (operation[y] == '(') {
                     areParentheses = true
-                    const operatorIndex = findOperatorIndex(operation, y)
+                    operatorIndex = findOperatorIndex(operation, y)
+                }
+
+                // For operators priority
+                else if (operation[y] == '*' || operation[y] == '/') {
+                    numberOfOperators += 1
+                    if (!result) {
+                        operatorIndex = y
+                    }
+                }
+
+                // Calcul for priorities
+                if (operatorIndex) {
                     a = findOperationNumberBefore(operation, operatorIndex)
                     b = findOperationNumberAfter(operation, operatorIndex)
                     operator = operation[operatorIndex]
                     result = calculateOperation(a, b, operator)
                 }
 
-                else if (operation[y] == '*' || operation[y] == '/') {
-                    numberOfOperators += 1
-                    if (!result) {
-                        a = findOperationNumberBefore(operation, y)
-                        b = findOperationNumberAfter(operation, y)
-                        operator = operation[y]
-                        result = calculateOperation(a, b, operator)
-                    }
-                }
-
-
+                // Count addition and soustraction as an operator
                 // If this i an operator '+' OR '-', AND not a '-' at the begnning of the operation OR atfer another operator
                 if (operation[y] == '+' || (operation[y] == '-' && !(operation[y] == '-' && (isAnOperator(operation, y-1) || y === 0)))) {
                     numberOfOperators += 1
                 }
             }
 
-            console.log(numberOfOperators)
             // Calculate operation if there was no priority operator
             if (!result) {
+                a = findOperationNumberBefore(operation, i)
+                b = findOperationNumberAfter(operation, i)
+                operator = element
                 result = calculateOperation(a, b, operator)
             }
 
@@ -182,8 +186,10 @@ const findOperatorIndex = (operation, parentheseIndex) => {
     }
 }
 
+// Check if the character is an operator
 const isAnOperator = (operation, index) => {
-    if (operation[index] == '+' || operation[index] == '-' || operation[index] == '*' || operation[index] == '/') {
+    const element = operation[index]
+    if (element == '+' || element == '-' || element == '*' || element == '/') {
         return true
     }
     else {
